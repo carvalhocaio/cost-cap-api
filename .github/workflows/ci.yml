@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
+
+jobs:
+  check:
+    name: Lint, Audit and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Verify go.mod is tidy
+        run: go mod tidy -diff
+
+      - name: Check code linting
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.13
+
+      - name: Check code formatting
+        run: |
+          out="$(golangci-lint fmt --diff)"
+          if [ -n "$out" ]; then echo "$out"; exit 1; fi
+
+      - name: Audit dependencies
+        run: go tool govulncheck ./...
+
+      - name: Run tests
+        run: go test -race ./...
+
+      - name: Build
+        run: go build ./...
