@@ -36,7 +36,7 @@ Run the renaming helper to set your module path. The binary name is taken from t
 make rename MODULE=github.com/<username>/my-cli
 ```
 
-This renames `cmd/app_name/` and updates `go.mod`, imports, the `Makefile`, `.golangci.yml` and this README.
+This renames `cmd/cost-cap-api/` and updates `go.mod`, imports, the `Makefile`, `.golangci.yml` and this README.
 
 ### 4. Install dependencies and git hooks
 
@@ -49,8 +49,8 @@ make hooks
 
 ```bash
 make build
-./bin/app_name -name Gopher
-./bin/app_name -version
+./bin/cost-cap-api -name Gopher
+./bin/cost-cap-api -version
 ```
 
 ---
@@ -85,7 +85,7 @@ make build
 .
 ├── .github/workflows/ci.yml   # GitHub Actions CI workflow
 ├── cmd/
-│   └── app_name/              # CLI entrypoint (renamed via make rename)
+│   └── cost-cap-api/              # CLI entrypoint (renamed via make rename)
 │       └── main.go
 ├── internal/
 │   └── app/                   # Application logic

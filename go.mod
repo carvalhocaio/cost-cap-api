@@ -1,4 +1,4 @@
-module github.com/carvalhocaio/app_name
+module github.com/carvalhocaio/cost-cap-api
 
 go 1.27.0
 

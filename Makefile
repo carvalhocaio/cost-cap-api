@@ -1,6 +1,6 @@
-.PHONY: help deps tidy hooks hooks-run build run test cover lint lint-fix format format-check audit ci check clean rename
+.PHONY: help deps tidy build run test cover lint lint-fix format format-check audit ci check clean
 
-NAME ?= app_name
+NAME ?= cost-cap-api
 PKG := $(shell go list -m)
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -s -w -X $(PKG)/internal/app.version=$(VERSION)
@@ -13,12 +13,6 @@ deps: ## Downloads module dependencies
 
 tidy: ## Adds missing and removes unused module dependencies
 	go mod tidy
-
-hooks: ## Installs the pre-commit hooks into .git/hooks
-	pre-commit install
-
-hooks-run: ## Runs all pre-commit hooks against all files
-	pre-commit run --all-files
 
 build: ## Builds the binary into bin/
 	go build -trimpath -ldflags "$(LDFLAGS)" -o bin/$(NAME) ./cmd/$(NAME)
@@ -56,10 +50,3 @@ check: ci ## Alias for ci
 clean: ## Cleans build artifacts and caches
 	rm -rf bin coverage.out
 	go clean -testcache
-
-rename: ## Renames the module and binary: make rename MODULE=github.com/user/my-cli
-	@if [ -z "$(MODULE)" ]; then \
-		echo "Error: MODULE is required. Example: make rename MODULE=github.com/user/my-cli"; \
-		exit 1; \
-	fi
-	go run ./scripts/rename "$(MODULE)"

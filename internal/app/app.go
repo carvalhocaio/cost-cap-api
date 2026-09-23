@@ -9,7 +9,7 @@ import (
 )
 
 // Name is the program name used in usage and output messages.
-const Name = "app_name"
+const Name = "cost-cap-api"
 
 // version is overridden at build time via -ldflags "-X ...app.version=...".
 var version = "dev"

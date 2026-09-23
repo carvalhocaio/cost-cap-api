@@ -1,11 +1,11 @@
-// Command app_name is the CLI entrypoint.
+// Command cost-cap-api is the CLI entrypoint.
 package main
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/carvalhocaio/app_name/internal/app"
+	"github.com/carvalhocaio/cost-cap-api/internal/app"
 )
 
 func main() {

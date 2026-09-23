@@ -19,4 +19,4 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/carvalhocaio/app_name
+        - github.com/carvalhocaio/cost-cap-api
