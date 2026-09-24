@@ -1,9 +1,12 @@
 .PHONY: help deps tidy build run test cover lint lint-fix format format-check audit ci check clean
 
+-include .env
+export
+
 NAME ?= cost-cap-api
 PKG := $(shell go list -m)
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
-LDFLAGS := -s -w -X $(PKG)/internal/app.version=$(VERSION)
+LDFLAGS := -s -w -X main.version=$(VERSION)
 
 help: ## Lists all available Makefile commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
