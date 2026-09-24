@@ -1,4 +1,4 @@
-.PHONY: help deps tidy build run test cover lint lint-fix format format-check audit ci check clean
+.PHONY: help deps tidy generate build run test cover lint lint-fix format format-check audit ci check clean
 
 -include .env
 export
@@ -16,6 +16,9 @@ deps: ## Downloads module dependencies
 
 tidy: ## Adds missing and removes unused module dependencies
 	go mod tidy
+
+generate: ## Generates type-safe database code with sqlc
+	sqlc generate
 
 build: ## Builds the binary into bin/
 	go build -trimpath -ldflags "$(LDFLAGS)" -o bin/$(NAME) ./cmd/$(NAME)

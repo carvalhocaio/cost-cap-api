@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/carvalhocaio/cost-cap-api/internal/config"
+	"github.com/carvalhocaio/cost-cap-api/internal/postgres"
 )
 
 const (
@@ -41,6 +42,16 @@ func run() error {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	pool, err := postgres.Connect(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return fmt.Errorf("connect database: %w", err)
+	}
+	defer pool.Close()
+
+	if err := postgres.Migrate(ctx, pool, logger); err != nil {
+		return fmt.Errorf("migrate database: %w", err)
+	}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
