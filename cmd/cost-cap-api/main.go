@@ -1,3 +1,4 @@
+// Package main provides the entrypoint for the cost-cap-api service.
 package main
 
 import (

@@ -1,3 +1,4 @@
+// Package config provides configuration parsing and validation for the application.
 package config
 
 import (
@@ -9,6 +10,7 @@ import (
 
 const minSecretLength = 32
 
+// Config holds the application configuration values.
 type Config struct {
 	HTTPAddr        string
 	DatabaseURL     string
@@ -19,6 +21,7 @@ type Config struct {
 	LogLevel        slog.Level
 }
 
+// Load reads and parses application configuration using the provided environment lookup function.
 func Load(getenv func(string) string) (Config, error) {
 	env := &envReader{getenv: getenv}
 
