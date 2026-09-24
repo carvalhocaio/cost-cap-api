@@ -1,16 +1,76 @@
-// Command cost-cap-api is the CLI entrypoint.
 package main
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"github.com/carvalhocaio/cost-cap-api/internal/app"
+	"github.com/carvalhocaio/cost-cap-api/internal/config"
 )
 
+const (
+	readHeaderTimeout = 5 * time.Second
+	readTimeout       = 10 * time.Second
+	writeTimeout      = 15 * time.Second
+	idleTimeout       = 60 * time.Second
+)
+
+var version = "dev"
+
 func main() {
-	if err := app.Run(os.Args[1:], os.Stdout); err != nil {
-		fmt.Fprintf(os.Stderr, "%s: %v\n", app.Name, err)
+	if err := run(); err != nil {
+		slog.Error("application stopped", "error", err)
 		os.Exit(1)
 	}
+}
+
+func run() error {
+	cfg, err := config.Load(os.Getenv)
+	if err != nil {
+		return fmt.Errorf("load config: %w", err)
+	}
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: cfg.LogLevel}))
+	slog.SetDefault(logger)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	server := &http.Server{
+		Addr:              cfg.HTTPAddr,
+		Handler:           mux,
+		ReadHeaderTimeout: readHeaderTimeout,
+		ReadTimeout:       readTimeout,
+		WriteTimeout:      writeTimeout,
+		IdleTimeout:       idleTimeout,
+	}
+
+	serverErr := make(chan error, 1)
+	go func() {
+		logger.Info("server listening", "addr", cfg.HTTPAddr, "version", version)
+		serverErr <- server.ListenAndServe()
+	}()
+
+	select {
+	case err := <-serverErr:
+		return fmt.Errorf("listen: %w", err)
+	case <-ctx.Done():
+	}
+
+	logger.Info("shutting down", "timeout", cfg.ShutdownTimeout)
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	defer cancel()
+
+	return server.Shutdown(shutdownCtx)
 }
