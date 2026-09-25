@@ -1,4 +1,3 @@
-// Package main provides the entrypoint for the cost-cap-api service.
 package main
 
 import (
@@ -11,8 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/carvalhocaio/cost-cap-api/internal/auth"
 	"github.com/carvalhocaio/cost-cap-api/internal/config"
 	"github.com/carvalhocaio/cost-cap-api/internal/postgres"
+	"github.com/carvalhocaio/cost-cap-api/internal/user"
 )
 
 const (
@@ -53,14 +54,16 @@ func run() error {
 		return fmt.Errorf("migrate database: %w", err)
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusNoContent)
-	})
+	users, err := user.NewService(postgres.NewUserRepository(pool), auth.NewArgon2idHasher(auth.DefaultArgon2idParams))
+	if err != nil {
+		return fmt.Errorf("create user service: %w", err)
+	}
+
+	tokens := auth.NewTokenManager(cfg.JWTSecret, cfg.JWTIssuer, cfg.AccessTokenTTL, time.Now)
 
 	server := &http.Server{
 		Addr:              cfg.HTTPAddr,
-		Handler:           mux,
+		Handler:           newRouter(logger, pool, auth.NewHandler(users, tokens)),
 		ReadHeaderTimeout: readHeaderTimeout,
 		ReadTimeout:       readTimeout,
 		WriteTimeout:      writeTimeout,

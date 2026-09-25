@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type ExpenseCategory string
@@ -81,13 +80,13 @@ type Expense struct {
 	AmountCents int64
 	Category    ExpenseCategory
 	SpentOn     time.Time
-	CreatedAt   pgtype.Timestamptz
-	UpdatedAt   pgtype.Timestamptz
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type User struct {
 	ID           uuid.UUID
 	Email        string
 	PasswordHash string
-	CreatedAt    pgtype.Timestamptz
+	CreatedAt    time.Time
 }
