@@ -28,7 +28,7 @@ func NewTokenManager(secret []byte, issuer string, ttl time.Duration, now func()
 }
 
 func (m *TokenManager) Issue(userID uuid.UUID) (AccessToken, error) {
-	issuedAt := m.now()
+	issuedAt := m.now().UTC().Truncate(time.Second)
 	expiresAt := issuedAt.Add(m.ttl)
 
 	claims := jwt.RegisteredClaims{
